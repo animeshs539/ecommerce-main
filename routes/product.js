@@ -1,15 +1,18 @@
 const productController = require("../controller/product");
-const isUser = require("../middleware/isUser");
-const isSupplier = require("../middleware/isSupplier");
+const isUser = require("../middleware/Authorization");
+//const isSupplier = require("../middleware/isSupplier");
 const router = require("express").Router();
-const isAdmin = require("../middleware/isAdmin");
+const {jwtVerify} = require("../authentication/jwt");
+const {authorizationAdmin,authorizationSupplier} = require("../middleware/Authorization");
+
+//const isAdmin = require("../middleware/isAdmin");
 
 router.get("/all",productController.getAllProducts);
-router.post("/add-product",isSupplier,productController.postAddProduct);
-router.get("/suppliers-product",isSupplier,productController.getSuppliersProducts);
-router.put("/edit-product/:id",isSupplier,productController.postUpdateProduct);
-router.delete("/supplier-delete/:id",isSupplier,productController.deleteSupplierProduct);
-router.delete("/delete/:id",isAdmin,productController.deleteAdminProduct);
+router.post("/add-product",jwtVerify,authorizationSupplier,productController.postAddProduct);
+router.get("/suppliers-product",jwtVerify,authorizationSupplier,productController.getSuppliersProducts);
+ router.put("/edit-product/:id",jwtVerify,authorizationSupplier,productController.postUpdateProduct);
+ router.delete("/supplier-delete/:id",jwtVerify,authorizationSupplier,productController.deleteSupplierProduct);
+ router.delete("/delete/:id",jwtVerify,authorizationAdmin,productController.deleteAdminProduct);
 
 
 module.exports = router;

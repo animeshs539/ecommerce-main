@@ -1,12 +1,13 @@
 const product = require("../model/products");
 const Sequelize = require("sequelize");
-const Supplier = require("../model/supplier");
 
 exports.getAllProducts = (req,res,next)=>{
     product.findAll().then(result=>{
         res.json(result).status(200);
     }).catch(err=>{
-        console.log(err);
+        const error = new Error(err);
+        error.statusCode = 500;
+        next(error);
     })
 }
 
@@ -16,28 +17,32 @@ exports.postAddProduct = (req,res,next)=>{
         category : req.body.category,
         price : req.body.price,
         quantity : req.body.quantity,
-        supplierId : req.session.supplier.id
+        userId : req.user.id
     }).then(result =>{
-        res.json("product added successfully").status(200);
+        res.status(200).json("product added successfully");
     }).catch(err=>{
-        res.json(err).status(500);
+        const error = new Error(err);
+        error.statusCode = 500;
+        next(error);
     })
 }
 
 exports.getSuppliersProducts = (req,res,next)=>{
     product.findAll({
         where : {
-            supplierId : req.session.supplier.id
+            userId : req.user.id
         }
     }).then(Products=>{
         if(Products[0]){
-            res.json(Products).status(200);
+            res.status(200).json(Products);
         }
         else{
-            res.json("please add product").status(200);
+            res.status(200).json("please add product");
         }
     }).catch(err=>{
-        res.json(err).status(200);
+        const error = new Error(err);
+        error.statusCode = 500;
+        next(error);
     })
 }
 
@@ -49,35 +54,43 @@ exports.postUpdateProduct = (req,res,next)=>{
         quantity : req.body.quantity
     },{
         where : Sequelize.and({id : req.params.id},{
-            supplierId : req.session.supplier.id
+            userId : req.user.id
         })
     }).then(result=>{
         if(result[0]){
-            res.json("product updated").status(200);
+            res.status(200).json("product updated");
 
         }
         else{
-            res.json("wrong id").status(400);
+            const error = new Error("wrong ID");
+            error.statusCode = 401;
+            next(error);
         }
     }).catch(err=>{
-        res.json(err).status(500);
+        const error = new Error(err);
+            error.statusCode = 500;
+            next(error);
     })    
 }
 
 exports.deleteSupplierProduct = (req,res,next)=>{
     product.destroy({
         where : Sequelize.and({id : req.params.id},
-            {supplierId : req.session.supplier.id})
+            {userId : req.user.id})
     }).then(result=>{
         if(result){
             
-            res.json("deleted successfully").status(200);
+            res.status(200).json("deleted successfully");
         }
         else{
-            res.json("product is not deleted").status(400);
+            const error = new Error("product is not deleted");
+            error.statusCode = 403;
+            next(error);
         }
     }).catch(err=>{
-        res.json(err).status(500);
+        const error = new Error(err);
+        error.statusCode = 500;
+        next(error);
     })
 }
 
@@ -89,12 +102,16 @@ exports.deleteAdminProduct =  (req,res,next)=>{
     }).then(result=>{
         if(result){
             
-            res.json("deleted successfully").status(200);
+            res.status(200).json("deleted successfully");
         }
         else{
-            res.json("product is not deleted").status(400);
+            const error = new Error("Product is not deleted");
+            error.statusCode = 404;
+            next(error);
         }
     }).catch(err=>{
-        res.json(err).status(500);
+        const error = new Error(err);
+            error.statusCode = 500;
+            next(error);
     })
 }

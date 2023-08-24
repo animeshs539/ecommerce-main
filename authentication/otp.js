@@ -6,8 +6,13 @@ const secret = authenticator.generateSecret();
 authenticator.options = {step:120,window : 60}
 
 const otpGenerated = (email)=>{
-    const token = authenticator.generate(secret);
-    mailer(email,token);
+    if(email)
+    {
+        const token = authenticator.generate(secret);
+        mailer(email,token);
+        return true;
+    }
+        return false;
 }
 
 const otpVerified = (newToken)=>{

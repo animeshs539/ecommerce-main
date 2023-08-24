@@ -9,14 +9,18 @@ const otpGenerate = (req,res,next)=>{
         }
     }).then(user=>{
         if(user[0]){
-            req.session.forgotUser = user[0];        
+            req.user = user[0];        
             otpGenerated(user[0].email);
-            res.json(`otp sent to email : ${user[0].email}`);
+            res.status(200).json({"message" : `otp sent to email : ${user[0].email}`});
         }else{
-            res.json("No user found.Please create an account").status(400);
+            const error = new Error("email not found");
+            error.statusCode = 404;
+            next(error);
         }
     }).catch(err=>{
-        console.log(err);
+        const error = new Error(err);
+            error.statusCode = 500;
+            next(error);
     })
 }
 
@@ -25,13 +29,16 @@ const otpVerify =  (req,res,next)=>{
     try{
             const isValid = otpVerified(req.body.token);
             if(isValid){
-                req.session.forgotPassword = true;
-                res.json("correct otp. hit the correct route to change password").status(200);
+                next();
               }else{
-                res.json("wrong otp").status(400);
+                const error = new Error("wrong otp");
+                error.statusCode = 403;
+                next(error);
               }
     }catch(err){
-        console.log(err);
+        const error = new Error(err);
+            error.statusCode = 500;
+            next(error);
     }
 
 }
